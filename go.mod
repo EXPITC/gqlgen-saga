@@ -1,4 +1,4 @@
-module github.com/expitc/gqlgen-demo
+module github.com/expitc/gqlgen-saga
 
 go 1.20
 
