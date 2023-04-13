@@ -6,43 +6,50 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
-	"math/big"
+	"math/rand"
 
 	"github.com/expitc/gqlgen-saga/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	rand, _ := rand.Int(rand.Reader, big.NewInt(100))
 	todo := &model.Todo{
-		ID:   fmt.Sprintf("T%d", rand),
+		ID:   fmt.Sprintf("T%d", rand.Int()),
 		Text: input.Text,
 		Done: false,
-		User: &model.User{},
+		User: &model.User{
+			ID:   input.UserID,
+			Name: "user" + input.UserID,
+		},
+		UserID: input.UserID,
 	}
 
-	// Insert new created data
-	r.todo = append(r.todo, todo)
-
+	// insert new value
+	r.todos = append(r.todos, todo)
 	return todo, nil
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.todo, nil
+	// return list of todos
+	return r.todos, nil
+}
+
+// User is the resolver for the user field.
+func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
 }
 
 // Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver {
-	return &mutationResolver{r}
-}
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver {
-	return &queryResolver{r}
-}
+func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+
+// Todo returns TodoResolver implementation.
+func (r *Resolver) Todo() TodoResolver { return &todoResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type todoResolver struct{ *Resolver }
