@@ -13,7 +13,6 @@ type Todo {
 type User {
   id: ID!
   name: String!
-  todo: [Todo]!
 }
 
 type Query {

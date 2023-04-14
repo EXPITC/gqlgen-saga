@@ -8,7 +8,6 @@ type NewTodo struct {
 }
 
 type User struct {
-	ID   string  `json:"id"`
-	Name string  `json:"name"`
-	Todo []*Todo `json:"todo"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
