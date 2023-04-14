@@ -11,4 +11,5 @@ import "github.com/expitc/gqlgen-saga/graph/model"
 type Resolver struct {
 	// maybe if this in db we can create funct or var that will be called when we need todos tabel collections
 	todos []*model.Todo
+	todo  *model.Todo
 }
