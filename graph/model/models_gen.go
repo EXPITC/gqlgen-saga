@@ -2,6 +2,11 @@
 
 package model
 
+type DoneTodo struct {
+	ID   string `json:"id"`
+	Done bool   `json:"done"`
+}
+
 type NewTodo struct {
 	Text   string `json:"text"`
 	UserID string `json:"userId"`

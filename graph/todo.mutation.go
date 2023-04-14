@@ -25,3 +25,21 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 
 	return todo, nil
 }
+
+// FinishTodo is the resolver for the finishTodo field.
+func (r *mutationResolver) FinishTodo(ctx context.Context, input model.DoneTodo) (*model.Todo, error) {
+	var finalResult *model.Todo
+
+	for i, todo := range r.todos {
+		if todo.ID == input.ID {
+			r.todos[i].Done = input.Done
+			finalResult = r.todos[i]
+		}
+	}
+
+	if finalResult == nil {
+		return nil, fmt.Errorf("todo not found")
+	}
+
+	return finalResult, nil
+}
