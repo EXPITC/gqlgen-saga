@@ -12,4 +12,6 @@ type Resolver struct {
 	// maybe if this in db we can create funct or var that will be called when we need todos tabel collections
 	todos []*model.Todo
 	todo  *model.Todo
+	users []*model.User
+	user  *model.User
 }

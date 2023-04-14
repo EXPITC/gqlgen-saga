@@ -10,17 +10,41 @@ import (
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+
 	todo := &model.Todo{
-		ID:   fmt.Sprintf("T%d", rand.Intn(100)),
-		Text: input.Text,
-		Done: false,
-		User: &model.User{
-			ID:   input.UserID,
-			Name: "User" + input.UserID,
-		},
+		ID:     fmt.Sprintf("T%d", rand.Intn(100)),
+		Text:   input.Text,
+		Done:   false,
 		UserID: input.UserID,
 	}
 
+	var user *model.User
+
+	// create new user if not yet register
+	for _, u := range r.users {
+		if u.ID == input.UserID {
+			user = nil
+			break
+		} else {
+			user = &model.User{
+				ID:   input.UserID,
+				Name: "User" + input.UserID,
+			}
+		}
+	}
+
+	if len(r.users) == 0 {
+		user = &model.User{
+			ID:   input.UserID,
+			Name: "User" + input.UserID,
+		}
+	}
+
+	if user != nil {
+		r.users = append(r.users, user)
+	}
+
+	// insert new todo and response
 	r.todos = append(r.todos, todo)
 
 	return todo, nil
