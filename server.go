@@ -17,6 +17,7 @@ const defaultPort = "8080"
 func init() {
 	initializers.LoadEnvVariable()
 	initializers.ConnectToDB()
+	initializers.SyncDatabase()
 }
 
 func main() {
@@ -31,8 +32,6 @@ func main() {
 
 	v1.POST("/query", graphHandler())
 
-	// http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	// http.Handle("/query", srv)
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	// log.Fatal(http.ListenAndServe(":"+port, nil))
 
