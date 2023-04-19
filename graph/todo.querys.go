@@ -12,7 +12,7 @@ func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	return r.todos, nil
 }
 
-func (r *queryResolver) Todo(ctx context.Context, todoID string) (*model.Todo, error) {
+func (r *queryResolver) Todo(ctx context.Context, todoID uint) (*model.Todo, error) {
 	var todo *model.Todo
 
 	for _, t := range r.todos {
@@ -29,7 +29,7 @@ func (r *queryResolver) Todo(ctx context.Context, todoID string) (*model.Todo, e
 }
 
 // UserTodos is the resolver for the userTodos field.
-func (r *queryResolver) UserTodos(ctx context.Context, userID string) ([]*model.Todo, error) {
+func (r *queryResolver) UserTodos(ctx context.Context, userID uint) ([]*model.Todo, error) {
 	var todos []*model.Todo
 
 	for _, todo := range r.todos {

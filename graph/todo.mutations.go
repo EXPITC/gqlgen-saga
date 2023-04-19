@@ -3,7 +3,8 @@ package graph
 import (
 	"context"
 	"fmt"
-	"math/rand"
+
+	"gorm.io/gorm"
 
 	"github.com/expitc/gqlgen-saga/graph/model"
 )
@@ -12,7 +13,6 @@ import (
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
 
 	todo := &model.Todo{
-		ID:     fmt.Sprintf("T%d", rand.Intn(100)),
 		Text:   input.Text,
 		Done:   false,
 		UserID: input.UserID,
@@ -27,16 +27,15 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 			break
 		} else {
 			user = &model.User{
-				ID:   input.UserID,
-				Name: "User" + input.UserID,
+				Model: gorm.Model{},
+				Name:  fmt.Sprintf("User %d", input.UserID),
 			}
 		}
 	}
 
 	if len(r.users) == 0 {
 		user = &model.User{
-			ID:   input.UserID,
-			Name: "User" + input.UserID,
+			Name: fmt.Sprintf("User %d", input.UserID),
 		}
 	}
 
@@ -51,7 +50,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 }
 
 // FinishTodo is the resolver for the finishTodo field.
-func (r *mutationResolver) FinishTodo(ctx context.Context, input model.DoneTodo) (*model.Todo, error) {
+func (r *mutationResolver) MarkTodo(ctx context.Context, input model.MarkTodo) (*model.Todo, error) {
 	var finalResult *model.Todo
 
 	for i, todo := range r.todos {

@@ -7,6 +7,8 @@ import (
 )
 
 func SyncDatabase() {
+	// defer sqlDB.Close()
+
 	log.Print("Migrate models")
 
 	if err := DB.AutoMigrate(&model.Todo{}, &model.User{}); err != nil {
