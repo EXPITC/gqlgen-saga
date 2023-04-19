@@ -12,7 +12,6 @@ func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, 
 	var user *model.User
 
 	for _, u := range r.users {
-		user = u
 		if u.ID == obj.UserID {
 			user = u
 		}

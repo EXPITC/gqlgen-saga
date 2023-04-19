@@ -27,14 +27,21 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 			break
 		} else {
 			user = &model.User{
-				Model: gorm.Model{},
-				Name:  fmt.Sprintf("User %d", input.UserID),
+				Model: gorm.Model{
+					ID: input.UserID,
+				},
+				Name: fmt.Sprintf("User %d", input.UserID),
+				Todo: []model.Todo{},
 			}
 		}
 	}
 
+	// Create for first user
 	if len(r.users) == 0 {
 		user = &model.User{
+			Model: gorm.Model{
+				ID: input.UserID,
+			},
 			Name: fmt.Sprintf("User %d", input.UserID),
 		}
 	}
