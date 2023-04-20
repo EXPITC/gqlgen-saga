@@ -11,3 +11,8 @@ type NewTodo struct {
 	Text   string `json:"text"`
 	UserID uint   `json:"userId"`
 }
+
+type PaginationRequest struct {
+	Batch     int `json:"batch"`
+	BatchSize int `json:"batchSize"`
+}

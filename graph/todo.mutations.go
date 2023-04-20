@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"gorm.io/gorm"
-
 	"github.com/expitc/gqlgen-saga/graph/model"
+	"github.com/expitc/gqlgen-saga/initializers"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -18,58 +17,35 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 		UserID: input.UserID,
 	}
 
-	var user *model.User
-
-	// create new user if not yet register
-	for _, u := range r.users {
-		if u.ID == input.UserID {
-			user = nil
-			break
-		} else {
-			user = &model.User{
-				Model: gorm.Model{
-					ID: input.UserID,
-				},
-				Name: fmt.Sprintf("User %d", input.UserID),
-				Todo: []model.Todo{},
-			}
-		}
-	}
-
-	// Create for first user
-	if len(r.users) == 0 {
-		user = &model.User{
-			Model: gorm.Model{
-				ID: input.UserID,
-			},
-			Name: fmt.Sprintf("User %d", input.UserID),
-		}
-	}
-
-	if user != nil {
-		r.users = append(r.users, user)
-	}
-
 	// insert new todo and response
-	r.todos = append(r.todos, todo)
+	create := initializers.DB.Create(todo)
+
+	if create.Error != nil {
+		// means no user associate create with omit and user resolver will handel the user
+		create = initializers.DB.Omit("UserID").Create(todo)
+		if create.Error != nil {
+			return nil, fmt.Errorf("can't create todo.//%s", create.Error)
+		}
+	}
 
 	return todo, nil
 }
 
 // FinishTodo is the resolver for the finishTodo field.
 func (r *mutationResolver) MarkTodo(ctx context.Context, input model.MarkTodo) (*model.Todo, error) {
-	var finalResult *model.Todo
+	var todo *model.Todo
 
-	for i, todo := range r.todos {
-		if todo.ID == input.ID {
-			r.todos[i].Done = input.Done
-			finalResult = r.todos[i]
-		}
+	updateTodo := initializers.DB.Model(&todo).Where("id = ?", input.ID).Update("Done", input.Done)
+
+	if updateTodo.Error != nil {
+		return nil, fmt.Errorf("todo not found.//%s", updateTodo.Error)
 	}
 
-	if finalResult == nil {
-		return nil, fmt.Errorf("todo not found")
+	getTodo := initializers.DB.First(&todo, input.ID)
+
+	if getTodo.Error != nil {
+		return nil, fmt.Errorf("cannot retrive todo.//%s", getTodo.Error)
 	}
 
-	return finalResult, nil
+	return todo, nil
 }

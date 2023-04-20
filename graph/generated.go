@@ -53,10 +53,10 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Todo      func(childComplexity int, todoID uint) int
-		Todos     func(childComplexity int) int
-		User      func(childComplexity int) int
+		Todos     func(childComplexity int, input *model.PaginationRequest) int
+		User      func(childComplexity int, userID uint) int
 		UserTodos func(childComplexity int, userID uint) int
-		Users     func(childComplexity int) int
+		Users     func(childComplexity int, input *model.PaginationRequest) int
 	}
 
 	Todo struct {
@@ -78,11 +78,11 @@ type MutationResolver interface {
 	MarkTodo(ctx context.Context, input model.MarkTodo) (*model.Todo, error)
 }
 type QueryResolver interface {
-	Todos(ctx context.Context) ([]*model.Todo, error)
+	Todos(ctx context.Context, input *model.PaginationRequest) ([]*model.Todo, error)
 	UserTodos(ctx context.Context, userID uint) ([]*model.Todo, error)
 	Todo(ctx context.Context, todoID uint) (*model.Todo, error)
-	Users(ctx context.Context) ([]*model.User, error)
-	User(ctx context.Context) (*model.User, error)
+	Users(ctx context.Context, input *model.PaginationRequest) ([]*model.User, error)
+	User(ctx context.Context, userID uint) (*model.User, error)
 }
 type TodoResolver interface {
 	User(ctx context.Context, obj *model.Todo) (*model.User, error)
@@ -144,14 +144,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Todos(childComplexity), true
+		args, err := ec.field_Query_todos_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Todos(childComplexity, args["input"].(*model.PaginationRequest)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
 			break
 		}
 
-		return e.complexity.Query.User(childComplexity), true
+		args, err := ec.field_Query_user_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.User(childComplexity, args["userId"].(uint)), true
 
 	case "Query.userTodos":
 		if e.complexity.Query.UserTodos == nil {
@@ -170,7 +180,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Users(childComplexity), true
+		args, err := ec.field_Query_users_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Users(childComplexity, args["input"].(*model.PaginationRequest)), true
 
 	case "Todo.done":
 		if e.complexity.Todo.Done == nil {
@@ -231,6 +246,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputMarkTodo,
 		ec.unmarshalInputNewTodo,
+		ec.unmarshalInputPaginationRequest,
 	)
 	first := true
 
@@ -370,6 +386,21 @@ func (ec *executionContext) field_Query_todo_args(ctx context.Context, rawArgs m
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_todos_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PaginationRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPaginationRequest2ᚖgithubᚗcomᚋexpitcᚋgqlgenᚑsagaᚋgraphᚋmodelᚐPaginationRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_userTodos_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -382,6 +413,36 @@ func (ec *executionContext) field_Query_userTodos_args(ctx context.Context, rawA
 		}
 	}
 	args["userId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uint
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2uint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PaginationRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPaginationRequest2ᚖgithubᚗcomᚋexpitcᚋgqlgenᚑsagaᚋgraphᚋmodelᚐPaginationRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -571,7 +632,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Todos(rctx)
+		return ec.resolvers.Query().Todos(rctx, fc.Args["input"].(*model.PaginationRequest))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -609,6 +670,17 @@ func (ec *executionContext) fieldContext_Query_todos(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_todos_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -761,7 +833,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
+		return ec.resolvers.Query().Users(rctx, fc.Args["input"].(*model.PaginationRequest))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -794,6 +866,17 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_users_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
 	return fc, nil
 }
 
@@ -811,7 +894,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().User(rctx)
+		return ec.resolvers.Query().User(rctx, fc.Args["userId"].(uint))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -843,6 +926,17 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_user_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -3135,6 +3229,42 @@ func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj inter
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPaginationRequest(ctx context.Context, obj interface{}) (model.PaginationRequest, error) {
+	var it model.PaginationRequest
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"batch", "batchSize"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "batch":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batch"))
+			it.Batch, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "batchSize":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batchSize"))
+			it.BatchSize, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3800,6 +3930,21 @@ func (ec *executionContext) marshalNID2uint(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNMarkTodo2githubᚗcomᚋexpitcᚋgqlgenᚑsagaᚋgraphᚋmodelᚐMarkTodo(ctx context.Context, v interface{}) (model.MarkTodo, error) {
 	res, err := ec.unmarshalInputMarkTodo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4218,6 +4363,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOPaginationRequest2ᚖgithubᚗcomᚋexpitcᚋgqlgenᚑsagaᚋgraphᚋmodelᚐPaginationRequest(ctx context.Context, v interface{}) (*model.PaginationRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPaginationRequest(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

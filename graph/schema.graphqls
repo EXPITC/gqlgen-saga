@@ -16,11 +16,17 @@ type User {
 }
 
 type Query {
-  todos: [Todo!]!
+  todos(input: PaginationRequest): [Todo!]!
   userTodos(userId: ID!): [Todo!]!
   todo(todoId: ID!): Todo!
-  users: [User!]!
-  user: User!
+  users(input: PaginationRequest): [User!]!
+  user(userId: ID!): User!
+}
+
+# Batch mean request like page 1, in other hand batchSize mean how many items /batch you want to retrive.
+input PaginationRequest {
+  batch: Int!
+  batchSize: Int!
 }
 
 input NewTodo {
