@@ -12,6 +12,11 @@ type NewTodo struct {
 	UserID uint   `json:"userId"`
 }
 
+type NewUser struct {
+	ID   *uint  `json:"id,omitempty"`
+	Name string `json:"name"`
+}
+
 type PaginationRequest struct {
 	Batch     int `json:"batch"`
 	BatchSize int `json:"batchSize"`

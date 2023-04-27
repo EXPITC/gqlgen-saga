@@ -6,8 +6,8 @@ import (
 
 type User struct {
 	gorm.Model
-	Name string `json:"name"`
-	Todo []Todo `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;references:ID"`
+	Name  string  `json:"name"`
+	Todos []*Todo `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;references:ID"`
 }
 
 // `gorm:"foreignKey:UserID,constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`

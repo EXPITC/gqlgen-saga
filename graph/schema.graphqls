@@ -2,17 +2,25 @@
 #
 # https://gqlgen.com/getting-started/
 
+# https://gqlgen.com/reference/scalars/
+scalar Time
+
 type Todo {
   id: ID!
   text: String!
   done: Boolean!
   user: User!
   userId: ID!
+  CreatedAt: Time
+  UpdatedAt: Time
 }
 
 type User {
   id: ID!
   name: String!
+  todo: [Todo!]
+  CreatedAt: Time
+  UpdatedAt: Time
 }
 
 type Query {
@@ -33,6 +41,10 @@ input NewTodo {
   text: String!
   userId: ID!
 }
+input NewUser {
+  id: ID
+  name: String!
+}
 
 input MarkTodo {
   id: ID!
@@ -41,5 +53,6 @@ input MarkTodo {
 
 type Mutation {
   createTodo(input: NewTodo!): Todo!
+  createUser(input: NewUser): User!
   markTodo(input: MarkTodo!): Todo!
 }

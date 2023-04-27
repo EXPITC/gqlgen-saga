@@ -2,6 +2,7 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/expitc/gqlgen-saga/graph/model"
@@ -36,6 +37,10 @@ func (r *queryResolver) User(ctx context.Context, userID uint) (*model.User, err
 
 	if getUser.Error != nil {
 		return nil, fmt.Errorf("cannot retrive user.//%s", getUser.Error)
+	}
+
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
 	}
 
 	return user, nil
